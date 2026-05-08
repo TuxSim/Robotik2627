@@ -431,7 +431,7 @@ class MappingBase:
     
     def updateMapArray(self):
         print(f'Feld:{self.tile}')
-        self.mapArray[self.tile[1], self.tile[0]] = 1
+        self.mapArray[self.tile[0], self.tile[1]] = 1
         print(f'MapArray: {self.mapArray}')
         
         
@@ -440,6 +440,12 @@ class MappingBase:
         self.mapArray = np.pad(self.mapArray, pad_width = ((0, width[1][1]), (0, width[0][1])), mode='constant', constant_values=0)
         print(f'mapArray{self.mapArray}')
        
+    
+    
+        
+        
+    
+
 class WorldMapping(MappingBase):
     def __init__(self):
         super().__init__()
@@ -452,8 +458,7 @@ class WorldMapping(MappingBase):
         self.largestX = 0
         self.largestZ = 0
         
-        self.smallestX = 0
-        self.smallestZ = 0
+
         
         self.xTiles = 1
         self.zTiles = 1
@@ -462,18 +467,19 @@ class WorldMapping(MappingBase):
         self.gpsZ = gps.getValues()[2]
         self.ninth = [1],[1]
         self.startingtile = self.calculateToNinthStartingTile(self.gpsX, self.gpsZ)
-
+        self.smallestX = self.startingtile[0]
+        self.smallestZ = self.startingtile[1]
         print(f'startfingtile= {self.startingtile}')
         
 
         self.resetted = False
         
     def calculateToNinthTile(self, coordinateX, coordinateZ):
-        tempX= int(round((coordinateX/12)*3,2)*100 - self.startingtile[0])
-        tempZ= int(round((coordinateZ/12)*3,2)*100 - self.startingtile[1])
+        tempX= int(round((coordinateX/12)*3,2)*100 - self.smallestX)
+        tempZ= int(round((coordinateZ/12)*3,2)*100 - self.smallestZ)
         print(f'ohne start: {(coordinateX/12)*3*100},ergebnis: {tempX + int((tempX+1)/3)},start: {self.startingtile[0]}, tempX: {tempX}, kleinstes: {self.smallestX}, teile: {(tempX+1)/3}')
         print(f'tempZ: {tempZ}, kleinstes: {self.smallestZ}, teile: {(tempZ+1)/3}')
-        return [tempX + int((tempX+1)/3), tempZ + int((tempZ+1)/3)]
+        return [tempX + int((tempX+1)/3+2/3), tempZ + int((tempZ+1)/3+2/3)]
     
     def calculateToNinthStartingTile(self, coordinateX, coordinateZ):
         return [int(round((coordinateX/12)*3,2)*100),
@@ -519,7 +525,56 @@ class WorldMapping(MappingBase):
     def calculateTileToCenterOfNinthTile(self, xTile:int, zTile:int):
         return [int(xTile*4+3), int(zTile*4+3)]
 
-class RoomMapping(MappingBase):
+class MotionController:
+    
+    def forward():
+        wheel1.setVelocity(6.0)
+        wheel2.setVelocity(6.0)
+    
+    def backward():
+        wheel1.setVelocity(-6.0)
+        wheel2.setVelocity(-6.0)
+
+    def turnRight():
+        wheel1.setVelocity(-6.0)
+        wheel2.setVelocity(6.0)
+
+    def turnLeft():
+        wheel1.setVelocity(6.0)
+        wheel2.setVelocity(-6.0)
+
+    def stop():
+        wheel1.setVelocity(0)
+        wheel2.setVelocity(0)      
+
+                
+    def ninetyDegreeRotationRight(): 
+        startwert = rotationsSensorRechts.getValue() 
+        print("anfang rechtsdrehung")
+
+        i:int = 0
+        while i < 30 and robot.step(timestep) == 0 and rotationsSensorRechts.getValue() < (startwert + math.pi/2 + math.pi/6):
+            MotionController.turnRight()
+            delay(20)
+            i+= 1
+            pass
+        robot.step(timestep)
+        MotionController.stop()
+
+    def ninetyDegreeRotationLeft():
+        startwert = rotationsSensorLinks.getValue() 
+        print("anfang linksdrehung")
+
+        
+        i:int = 0
+        while i < 30 and robot.step(timestep) == 0 and rotationsSensorLinks.getValue() < (startwert + math.pi/2 + math.pi/6):
+            MotionController.turnLeft()
+            delay(20)
+            i+= 1
+            pass
+        robot.step(timestep)
+        MotionController.stop()
+
     
     def __init__(self, pAreaNr):
         super().__init__()
