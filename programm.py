@@ -40,6 +40,9 @@ rotationsSensorRechts.enable(timestep)
 lidar = robot.getDevice("lidar") # Step 2: Retrieve the sensor, named "lidar", from the robot. Note that the sensor name may differ between robots.
 lidar.enable(timestep) # Step 3: Enable the sensor, using the timestep as the update rate
 
+inertialUnit = robot.getDevice("inertial_unit") # Step 2: Retrieve the sensor, named "inertial_unit", from the robot. Note that the sensor name may differ between robots.
+inertialUnit.enable(timestep) # Step 3: Enable the sensor, using the timestep as the update rate
+
 distanceSensor = robot.getDevice("distance sensor1")
 distanceSensor.enable(timestep)
 
@@ -84,11 +87,11 @@ colorSensor.enable(timestep)
 
 cam_c:Camera = robot.getDevice("camera2")
 cam_r:Camera = robot.getDevice("camera3")
-cam_l:Camera = robot.getDevice("camera1")
+#cam_l:Camera = robot.getDevice("camera1")
 
 cam_c.enable(timestep)
 cam_r.enable(timestep)
-cam_l.enable(timestep)
+#cam_l.enable(timestep)
 
 #Die Startzeit für den Roboter wird gespeichert. Damit kann man später ausrechnen, wie lange der Roboter schon aktiv ist und wieviel Zeit verbleibt.
 startZeit = robot.getTime()
@@ -216,6 +219,23 @@ class LidarEvaluator:
             print('Wand vorne-rechts')
             print('vr:'+str(round(rangeImage[1195],3)) + " ", end='')   
             return True
+
+class InertialUnitEvaluator:
+    def getCompassDir()->str:
+        unitValue = inertialUnit.getRollPitchYaw()[2]/math.pi
+        if unitValue<-(3/4) or unitValue>(3/4):
+            print("y-Achse oben")
+            print(f'value:{unitValue}, {((3/4))}, {(1/4)}')
+            return "N"
+        elif (1/4)<unitValue<(3/4):
+            print("x-Achse links")
+            return "W"
+        elif 0<unitValue<(1/4) or -(1/4)<unitValue<0:
+            print("y-Achse unten")
+            return "S"
+        elif -(3/4)<unitValue<-(1/4):
+            print("x-Achse rechts")
+            return "O"
             
 class EmitterCommunicator:
     def signalEoP():
@@ -584,6 +604,9 @@ class WorldMapping(MappingBase):
         
     def calculateTileToCenterOfNinthTile(self, xTile:int, zTile:int):
         return [int(xTile*4+3), int(zTile*4+3)]
+    
+    def checkWalls():
+        pass
 
 
 class RoomMapping:
