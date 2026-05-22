@@ -398,6 +398,57 @@ class GPSEvaluator:
             return True
 
 
+class MotionController:
+    
+    def forward():
+        wheel1.setVelocity(6.0)
+        wheel2.setVelocity(6.0)
+    
+    def backward():
+        wheel1.setVelocity(-6.0)
+        wheel2.setVelocity(-6.0)
+
+    def turnRight():
+        wheel1.setVelocity(-6.0)
+        wheel2.setVelocity(6.0)
+
+    def turnLeft():
+        wheel1.setVelocity(6.0)
+        wheel2.setVelocity(-6.0)
+
+    def stop():
+        wheel1.setVelocity(0)
+        wheel2.setVelocity(0)      
+
+                
+    def ninetyDegreeRotationRight(): 
+        startwert = rotationsSensorRechts.getValue() 
+        print("anfang rechtsdrehung")
+
+        i:int = 0
+        while i < 30 and robot.step(timestep) == 0 and rotationsSensorRechts.getValue() < (startwert + math.pi/2 + math.pi/6):
+            MotionController.turnRight()
+            delay(20)
+            i+= 1
+            pass
+        robot.step(timestep)
+        MotionController.stop()
+
+    def ninetyDegreeRotationLeft():
+        startwert = rotationsSensorLinks.getValue() 
+        print("anfang linksdrehung")
+
+        
+        i:int = 0
+        while i < 30 and robot.step(timestep) == 0 and rotationsSensorLinks.getValue() < (startwert + math.pi/2 + math.pi/6):
+            MotionController.turnLeft()
+            delay(20)
+            i+= 1
+            pass
+        robot.step(timestep)
+        MotionController.stop()
+
+
 class MapManager:
     pass
 
@@ -534,55 +585,6 @@ class WorldMapping(MappingBase):
     def calculateTileToCenterOfNinthTile(self, xTile:int, zTile:int):
         return [int(xTile*4+3), int(zTile*4+3)]
 
-class MotionController:
-    
-    def forward():
-        wheel1.setVelocity(6.0)
-        wheel2.setVelocity(6.0)
-    
-    def backward():
-        wheel1.setVelocity(-6.0)
-        wheel2.setVelocity(-6.0)
-
-    def turnRight():
-        wheel1.setVelocity(-6.0)
-        wheel2.setVelocity(6.0)
-
-    def turnLeft():
-        wheel1.setVelocity(6.0)
-        wheel2.setVelocity(-6.0)
-
-    def stop():
-        wheel1.setVelocity(0)
-        wheel2.setVelocity(0)      
-
-                
-    def ninetyDegreeRotationRight(): 
-        startwert = rotationsSensorRechts.getValue() 
-        print("anfang rechtsdrehung")
-
-        i:int = 0
-        while i < 30 and robot.step(timestep) == 0 and rotationsSensorRechts.getValue() < (startwert + math.pi/2 + math.pi/6):
-            MotionController.turnRight()
-            delay(20)
-            i+= 1
-            pass
-        robot.step(timestep)
-        MotionController.stop()
-
-    def ninetyDegreeRotationLeft():
-        startwert = rotationsSensorLinks.getValue() 
-        print("anfang linksdrehung")
-
-        
-        i:int = 0
-        while i < 30 and robot.step(timestep) == 0 and rotationsSensorLinks.getValue() < (startwert + math.pi/2 + math.pi/6):
-            MotionController.turnLeft()
-            delay(20)
-            i+= 1
-            pass
-        robot.step(timestep)
-        MotionController.stop()
 
 class RoomMapping:
     def __init__(self, pAreaNr):
@@ -1182,6 +1184,7 @@ strategy = RightHandStrategy()
 lidarEv = LidarEvaluator()
 gpsEv = GPSEvaluator()
 usEv = UsSensorEvaluator()
+'''
 while robot.step(timestep) != -1:
     if gpsEv.stuck():
         print("Stuck")
@@ -1221,3 +1224,6 @@ while robot.step(timestep) != -1:
         MotionController.ninetyDegreeRotationLeft()
     elif LidarEvaluator.checkFrontWall():
         MotionController.ninetyDegreeRotationLeft()
+'''
+while robot.step(timestep) != -1:
+    
