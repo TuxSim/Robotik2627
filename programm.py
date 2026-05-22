@@ -163,6 +163,13 @@ class LidarEvaluator:
         
     def checkFrontWall():
         rangeImage = lidar.getRangeImage(); # Step 4: Retrieve the range image
+        if (round(rangeImage[1152], 3)) < 0.069:
+            print('Wand vorne')
+            print(str(round(rangeImage[1152],3)) + " ", end='')
+            return True
+    
+    def checkFullFrontWall():
+        rangeImage = lidar.getRangeImage(); # Step 4: Retrieve the range image
         if (round(rangeImage[1152], 3)) < 0.069 and (round(rangeImage[1142], 3)) < 0.08 and (round(rangeImage[1162], 3)) < 0.08:
             print('Wand vorne')
             print(str(round(rangeImage[1152],3)) + " ", end='')
@@ -450,10 +457,10 @@ class WorldMapping(MappingBase):
     def __init__(self):
         super().__init__()
         
-        self.mapArray = np.array([['1', '1', '1', '1'], 
-                                  ['1', '5', '0', '5'], 
-                                  ['1', '0', '0', '0'],
-                                  ['1', '5', '0', '5']], dtype=str)
+        self.mapArray = np.array([['0', '0', '0', '0'], 
+                                  ['0', '5', '0', '5'], 
+                                  ['0', '0', '0', '0'],
+                                  ['0', '5', '0', '5']], dtype=str)
         
         self.largestX = 0
         self.largestZ = 0
@@ -520,6 +527,8 @@ class WorldMapping(MappingBase):
         
     
     def calculateNinthTileToTile(self, xTile:int, zTile:int):
+        if xTile%4==3 or zTile%4==3:
+            return None
         return [int(xTile/4), int(zTile/4)]
         
     def calculateTileToCenterOfNinthTile(self, xTile:int, zTile:int):
@@ -575,7 +584,7 @@ class MotionController:
         robot.step(timestep)
         MotionController.stop()
 
-    
+class RoomMapping:
     def __init__(self, pAreaNr):
         super().__init__()
         self.mapArray = np.array([[0]], dtype=int)
