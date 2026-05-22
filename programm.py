@@ -192,6 +192,13 @@ class LidarEvaluator:
             print(str(round(rangeImage[1152],3)) + " ", end='')
             return True
         
+    def checkBackWall():
+        rangeImage = lidar.getRangeImage(); # Step 4: Retrieve the range image
+        if (round(rangeImage[1408], 3)) < 0.069:
+            print('Wand vorne')
+            print(str(round(rangeImage[1408],3)) + " ", end='')
+            return True
+        
     def checkLeftFrontWall():
         rangeImage = lidar.getRangeImage(); # Step 4: Retrieve the range image
         if (round(rangeImage[1067],3))<0.059:
@@ -221,21 +228,21 @@ class LidarEvaluator:
             return True
 
 class InertialUnitEvaluator:
-    def getCompassDir()->str:
+    def getCompassDir()->int:
         unitValue = inertialUnit.getRollPitchYaw()[2]/math.pi
         if unitValue<-(3/4) or unitValue>(3/4):
             print("y-Achse oben")
             print(f'value:{unitValue}, {((3/4))}, {(1/4)}')
-            return "N"
+            return 0
         elif (1/4)<unitValue<(3/4):
             print("x-Achse links")
-            return "W"
+            return 3
         elif 0<unitValue<(1/4) or -(1/4)<unitValue<0:
             print("y-Achse unten")
-            return "S"
+            return 2
         elif -(3/4)<unitValue<-(1/4):
             print("x-Achse rechts")
-            return "O"
+            return 1
             
 class EmitterCommunicator:
     def signalEoP():
@@ -495,6 +502,10 @@ class MappingBase:
             return [int(round(coordinateX/12,2)*100),
                     int(round(coordinateZ/12,2)*100)]
     
+    def getTileCoords()->list:
+        gpsValues = gps.getValues
+        return WorldMapping.calculateToTile(gpsValues[0], gpsValues[2])
+    
     def calculateToTile(self, coordinateX, coordinateZ):
         return [int(round(coordinateX/12,2)*100 - self.startingtile[0] - self.smallestX),
         int(round(coordinateZ/12,2)*100 - self.startingtile[1] - self.smallestZ)]
@@ -552,6 +563,10 @@ class WorldMapping(MappingBase):
 
         self.resetted = False
         
+    def getNinthTileCoords()->list:
+        gpsValues = gps.getValues
+        return WorldMapping.calculateToNinthTile(gpsValues[0], gpsValues[2])
+    
     def calculateToNinthTile(self, coordinateX, coordinateZ):
         tempX= int(round((coordinateX/12)*3,2)*100 - self.smallestX)
         tempZ= int(round((coordinateZ/12)*3,2)*100 - self.smallestZ)
@@ -605,9 +620,29 @@ class WorldMapping(MappingBase):
     def calculateTileToCenterOfNinthTile(self, xTile:int, zTile:int):
         return [int(xTile*4+3), int(zTile*4+3)]
     
-    def checkWalls():
-        pass
-
+    def getWalls():
+        direction = InertialUnitEvaluator.getCompassDir()
+        walldir:int
+        if LidarEvaluator.checkFrontWall():
+            walldir = direction
+        if LidarEvaluator.checkRightWall():
+            walldir = direction+1
+        if LidarEvaluator.checkBackWall():
+            walldir = direction+2
+        if LidarEvaluator.checkLeftWall():
+            walldir = direction+3
+        while walldir>=4 and robot.step(timestep)!=-1:
+            walldir-=4
+        return
+        
+    def updateWallsInArray(self):
+        walldir = self.getWalls()
+        tileCoords = self.getTileCoords()
+        ninthCoords = self.calculateTileToCenterOfNinthTile(tileCoords[0], tileCoords[1])
+        if walldir==0:
+            self.mapArray[ninthCoords[0]+2, ninthCoords[1]]#gehe von der Mitte zwei Elemente nach oben zur Ebene mit Wänden
+        
+        
 
 class RoomMapping:
     def __init__(self, pAreaNr):
@@ -1249,4 +1284,5 @@ while robot.step(timestep) != -1:
         MotionController.ninetyDegreeRotationLeft()
 '''
 while robot.step(timestep) != -1:
-    
+    print(InertialUnitEvaluator.getCompassDir())
+    MotionController.forward()
