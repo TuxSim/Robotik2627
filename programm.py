@@ -149,6 +149,13 @@ class LidarEvaluator:
     def __init__(self):
         self.leftRotation = False
         
+    def checkWall(direction):
+        rangeImage = lidar.getRangeImage(); # Step 4: Retrieve the range image
+        if (round(rangeImage[direction], 3)) < 0.069:
+            print(f'Wand in {direction}')
+            print(str(round(rangeImage[1024],3)) + " ", end='')
+            return True
+    
     def checkleftRotation(self):
         rangeImage = lidar.getRangeImage()
         if self.leftRotation == True and round(rangeImage[1024], 3) <0.069: #bleibt solange im Modus "nach links gedreht,"" bis man links an einer Wand vorbeigefahren ist
@@ -243,6 +250,22 @@ class InertialUnitEvaluator:
         elif -(3/4)<unitValue<-(1/4):
             print("x-Achse rechts")
             return 1
+    def getRotation()->float:
+        return inertialUnit.getRollPitchYaw()[2]
+    
+    def convertRotationRadianToDegree(radRot):
+        rad = radRot+math.pi #damit der radiant zwischen 0 und 2pi und nicht zwischen -pi und pi liegt
+        return math.degrees(rad)
+    
+    def getDegreeRotation()->float:
+        return InertialUnitEvaluator.convertRotationRadianToDegree(InertialUnitEvaluator.getRotation())
+    
+    
+    def convertRotationRadianToLidarIndex(radRot):# wandelt vom Bogenmaß in das Format der Lidar Indexes um
+        return int((-256/math.pi*radRot+128)%512+1024)
+    
+    def getLidarIndexRotation()->int:
+        return InertialUnitEvaluator.convertRotationRadianToLidarIndex(InertialUnitEvaluator.getRotation())
             
 class EmitterCommunicator:
     def signalEoP():
@@ -620,20 +643,17 @@ class WorldMapping(MappingBase):
     def calculateTileToCenterOfNinthTile(self, xTile:int, zTile:int):
         return [int(xTile*4+3), int(zTile*4+3)]
     
-    def getWalls():
-        direction = InertialUnitEvaluator.getCompassDir()
-        walldir:int
-        if LidarEvaluator.checkFrontWall():
-            walldir = direction
-        if LidarEvaluator.checkRightWall():
-            walldir = direction+1
-        if LidarEvaluator.checkBackWall():
-            walldir = direction+2
-        if LidarEvaluator.checkLeftWall():
-            walldir = direction+3
-        while walldir>=4 and robot.step(timestep)!=-1:
-            walldir-=4
-        return
+    def checkWallZPositive()->bool:
+        return LidarEvaluator.checkWall(InertialUnitEvaluator.getLidarIndexRotation())
+    
+    def checkWallZNegative()->bool:
+        return LidarEvaluator.checkWall((InertialUnitEvaluator.getLidarIndexRotation()+2*128)%512+1024)
+    
+    def checkWallXPositive()->bool:
+        return LidarEvaluator.checkWall((InertialUnitEvaluator.getLidarIndexRotation()+3*128)%512+1024)
+    
+    def checkWallXNegative()->bool:
+        return LidarEvaluator.checkWall((InertialUnitEvaluator.getLidarIndexRotation()+128)%512+1024)
         
     def updateWallsInArray(self):
         walldir = self.getWalls()
@@ -1284,5 +1304,13 @@ while robot.step(timestep) != -1:
         MotionController.ninetyDegreeRotationLeft()
 '''
 while robot.step(timestep) != -1:
-    print(InertialUnitEvaluator.getCompassDir())
+    #print(InertialUnitEvaluator.getCompassDir())
+    #print(InertialUnitEvaluator.getDegreeRotation())
+    #print(InertialUnitEvaluator.getLidarIndexRotation())
+    #print(LidarEvaluator.checkWall(InertialUnitEvaluator.getLidarIndexRotation()))
+    print("---------Durchlauf-----------")
+    if WorldMapping.checkWallXNegative(): print("Wand xNegativ")
+    if WorldMapping.checkWallXPositive(): print("Wand xPositiv")
+    if WorldMapping.checkWallZNegative(): print("Wand zNegativ")
+    if WorldMapping.checkWallZPositive(): print("Wand zPositiv")
     MotionController.forward()
