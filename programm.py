@@ -659,13 +659,20 @@ class WorldMapping(MappingBase):
     def checkWallXNegative()->bool:
         print(f'xNegative: {(InertialUnitEvaluator.getLidarIndexRotation()+128)%512+1024}')
         return LidarEvaluator.checkWall((InertialUnitEvaluator.getLidarIndexRotation()+128)%512+1024)
-        
+
+    
     def updateWallsInArray(self):
-        walldir = self.getWalls()
+        
         tileCoords = self.getTileCoords()
         ninthCoords = self.calculateTileToCenterOfNinthTile(tileCoords[0], tileCoords[1])
-        if walldir==0:
+        if self.checkWallZNegative():
             self.mapArray[ninthCoords[0]+2, ninthCoords[1]]#gehe von der Mitte zwei Elemente nach oben zur Ebene mit Wänden
+        if self.checkWallZPositive():
+            self.mapArray[ninthCoords[0]+2, ninthCoords[1]]#gehe von der Mitte zwei Elemente nach unten zur Ebene mit Wänden
+        if self.checkWallXNegative():
+            self.mapArray[ninthCoords[0], ninthCoords[1]+2]#gehe von der Mitte zwei Elemente nach links zur Ebene mit Wänden
+        if self.checkWallXPositive():
+            self.mapArray[ninthCoords[0], ninthCoords[1]-2]#gehe von der Mitte zwei Elemente nach links zur Ebene mit Wänden
         
         
 
