@@ -266,6 +266,7 @@ class InertialUnitEvaluator:
     
     def getLidarIndexRotation()->int:
         return InertialUnitEvaluator.convertRotationRadianToLidarIndex(InertialUnitEvaluator.getRotation())
+    
             
 class EmitterCommunicator:
     def signalEoP():
@@ -644,15 +645,19 @@ class WorldMapping(MappingBase):
         return [int(xTile*4+3), int(zTile*4+3)]
     
     def checkWallZPositive()->bool:
+        print(f'xNegative: {InertialUnitEvaluator.getLidarIndexRotation()}')
         return LidarEvaluator.checkWall(InertialUnitEvaluator.getLidarIndexRotation())
     
     def checkWallZNegative()->bool:
+        print(f'xNegative: {(InertialUnitEvaluator.getLidarIndexRotation()+2*128)%512+1024}')
         return LidarEvaluator.checkWall((InertialUnitEvaluator.getLidarIndexRotation()+2*128)%512+1024)
     
     def checkWallXPositive()->bool:
+        print(f'xNegative: {(InertialUnitEvaluator.getLidarIndexRotation()+3*128)%512+1024}')
         return LidarEvaluator.checkWall((InertialUnitEvaluator.getLidarIndexRotation()+3*128)%512+1024)
     
     def checkWallXNegative()->bool:
+        print(f'xNegative: {(InertialUnitEvaluator.getLidarIndexRotation()+128)%512+1024}')
         return LidarEvaluator.checkWall((InertialUnitEvaluator.getLidarIndexRotation()+128)%512+1024)
         
     def updateWallsInArray(self):
@@ -1313,4 +1318,5 @@ while robot.step(timestep) != -1:
     if WorldMapping.checkWallXPositive(): print("Wand xPositiv")
     if WorldMapping.checkWallZNegative(): print("Wand zNegativ")
     if WorldMapping.checkWallZPositive(): print("Wand zPositiv")
+    print(InertialUnitEvaluator.getDegreeRotation())
     MotionController.forward()
