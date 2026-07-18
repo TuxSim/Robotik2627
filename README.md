@@ -8,8 +8,8 @@ Our team consists of three members: Bastian, Jonas and Luis. We develop this pro
 
 ## Competition
 
-The participants programm a virtual robot, the e-puck. The robot has to drive through an maze, create a map and recognise victims and dangers with the cam.
-Website: https://rescuesim.robocup.org/
+The participants programm a virtual robot, the e-puck. The robot has to drive through an maze, create a map and recognise victims and dangers with the cam.\
+Website: https://rescuesim.robocup.org/ \
 Rules: https://junior.robocup.org/wp-content/uploads/2026/02/RCJRescueSimulation2026-final.pdf
 
 ## Features
