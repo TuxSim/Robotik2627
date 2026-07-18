@@ -8,15 +8,17 @@ Our team consists of three members: Bastian, Jonas and Luis. We develop this pro
 
 ## Competition
 
-The participants programm a virtual robot, the e-puck. The robot has to drive through an maze, create a map and recognise victims and dangers with the cam.\
+The participants programm a virtual robot, the e-puck. The robot has to drive through an maze, create a map and recognise victims and dangers with the cams.\
 Website: https://rescuesim.robocup.org/ \
 Rules: https://junior.robocup.org/wp-content/uploads/2026/02/RCJRescueSimulation2026-final.pdf
 
 ## Features
 
-### Sensor Evaluation
-
+### Robot
+![][./pics/robot.png]
 Sensors: Lidar, GPS, ultrasonic sensor, cams, inertial unit, wheel rotation sensors
+
+### Sensor Evalutation
 
 ### Mapping
 
