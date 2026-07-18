@@ -15,7 +15,7 @@ Rules: https://junior.robocup.org/wp-content/uploads/2026/02/RCJRescueSimulation
 ## Features
 
 ### Robot
-![Picture of robot](./pics/robot.png)
+![Picture of robot](./pics/robot.png)\
 Sensors: Lidar, GPS, ultrasonic sensor, cams, inertial unit, wheel rotation sensors
 
 ### Sensor Evalutation
