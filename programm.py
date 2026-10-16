@@ -6,6 +6,10 @@ import math
 import struct # Use the struct module in order to pack the message sent to the Main Supervisor
 import cv2
 
+#"FEHER" / "NICHT GENUTZT" / "DUPCODE" nutzen um an stellen zu gelanden die nicht genutzt sind, oder wo ein fehler ist
+# mapping gibt es in 3 stellen, einmal in MappingBase / WorldMappin, in MotionController und raus commentiert in worldMap = WorldMapping()
+# alle robot.step(timestep) == 0 checks sind falsch weil wenn die simulation ended gibt es -1 zurück, nicht 0
+
 debug = True
 # Die Zeit für einen Simulationsschritt des Simulators wird gesetzt
 timestep = 32            
@@ -92,6 +96,8 @@ cam_l.enable(timestep)
 
 #Die Startzeit für den Roboter wird gespeichert. Damit kann man später ausrechnen, wie lange der Roboter schon aktiv ist und wieviel Zeit verbleibt.
 startZeit = robot.getTime()
+
+drive_speed = 6.0 
     
 def delay(time:int):
 	initTime = robot.getTime()
@@ -99,7 +105,7 @@ def delay(time:int):
 		if (robot.getTime() - initTime) * 1000.0 > time:
 			return None
 
-class SensorBase:
+class SensorBase: #NICHT GENUTZT 
     pass
 
 class UsSensorEvaluator:
@@ -142,7 +148,7 @@ class ColorSensor:
                 
                 return True
 
-class LidarEvaluator:
+class LidarEvaluator: #FEHLER die hälfte nutzt (self) und die andere hälfte nicht
     def __init__(self):
         self.leftRotation = False
         
@@ -263,7 +269,10 @@ class ReceiverCommunicator:
         if receiver.getQueueLength() > 0: # If receiver queue is not empty
             print(f'Receiverqueue{receiver.getQueueLength()}')
             return True    
-    def checkLoP()->bool:
+    def checkLoP()->bool:   # FEHLER: Wenn ein Paket da ist, aber nicht 'L' ist, gibt die Funktion None zurück
+                            # und ruft nextPacket() nicht auf. Dadurch bleibt das Paket im Puffer liegen.
+                            # Vorschlag: nextPacket() immer aufrufen und explizit True/False zurückgeben.
+        
         if ReceiverCommunicator.checkInput():
             receivedData = receiver.getBytes()
             tup = struct.unpack('c', receivedData) # Parse data into character
@@ -271,9 +280,13 @@ class ReceiverCommunicator:
                 print("Detected Lack of Progress!")
                 receiver.nextPacket() # Discard the current data packet
                 return True
-        else: return False
-        
-    def checkGameInformation():
+        else: return False 
+
+
+    def checkGameInformation(): # FEHLER: Wenn ein Paket da ist, aber nicht 'G' ist, gibt die Funktion None zurück.
+                                # Im 'G'-Fall fehlt return True. Außerdem wird nextPacket() nur im 'G'-Fall aufgerufen,
+                                # sodass andere Pakete den Puffer blockieren.
+                                # Vorschlag: nextPacket() immer aufrufen und explizit True/False zurückgeben.
         if ReceiverCommunicator.checkInput():
             receivedData = receiver.getBytes()
             tup = struct.unpack('c f i', receivedData) # Parse data into char, float, int
@@ -281,60 +294,10 @@ class ReceiverCommunicator:
                 print(f'Game Score: {tup[1]}  Remaining time: {tup[2]}')
                 receiver.nextPacket() # Discard the current data packet
 
-class MotionController:
-    
-    def forward():
-        wheel1.setVelocity(6.0)
-        wheel2.setVelocity(6.0)
-    
-    def backward():
-        wheel1.setVelocity(-6.0)
-        wheel2.setVelocity(-6.0)
-
-    def turnRight():
-        wheel1.setVelocity(-6.0)
-        wheel2.setVelocity(6.0)
-
-    def turnLeft():
-        wheel1.setVelocity(6.0)
-        wheel2.setVelocity(-6.0)
-
-    def stop():
-        wheel1.setVelocity(0)
-        wheel2.setVelocity(0)      
-
-                
-    def ninetyDegreeRotationRight(): 
-        startwert = rotationsSensorRechts.getValue() 
-        print("anfang rechtsdrehung")
-
-        i:int = 0
-        while i < 30 and robot.step(timestep) == 0 and rotationsSensorRechts.getValue() < (startwert + math.pi/2 + math.pi/6):
-            MotionController.turnRight()
-            delay(20)
-            i+= 1
-            camE.check()
-        robot.step(timestep)
-        MotionController.stop()
-
-    def ninetyDegreeRotationLeft():
-        startwert = rotationsSensorLinks.getValue() 
-        print("anfang linksdrehung")
-
-        
-        i:int = 0
-        while i < 30 and robot.step(timestep) == 0 and rotationsSensorLinks.getValue() < (startwert + math.pi/2 + math.pi/6):
-            MotionController.turnLeft()
-            delay(20)
-            i+= 1
-            camE.check()
-        robot.step(timestep)
-        MotionController.stop()
-
-class BaseStrategy:
+class BaseStrategy: #NICHT GENUTZT
     pass
 
-class RightHandStrategy(BaseStrategy):
+class LeftHandStrategy(BaseStrategy): #instanziert aber NICHT WEITER GENUTZT
     
     def __init__(self):
         self.leftRotation = False
@@ -373,7 +336,7 @@ class RightHandStrategy(BaseStrategy):
                 
             print('drehen abgeschlossen')
 
-class MapStrategy(BaseStrategy):
+class MapStrategy(BaseStrategy): #NICHT GENUTZT
     pass
 
 class GPSEvaluator:
@@ -391,7 +354,7 @@ class GPSEvaluator:
             return True
 
 
-class MapManager:
+class MapManager: #NICHT GENUTZT
     pass
 
 class MappingBase:
@@ -528,20 +491,20 @@ class WorldMapping(MappingBase):
 class MotionController:
     
     def forward():
-        wheel1.setVelocity(6.0)
-        wheel2.setVelocity(6.0)
+        wheel1.setVelocity(drive_speed)
+        wheel2.setVelocity(drive_speed)
     
     def backward():
-        wheel1.setVelocity(-6.0)
-        wheel2.setVelocity(-6.0)
+        wheel1.setVelocity(-drive_speed)
+        wheel2.setVelocity(-drive_speed)
 
     def turnRight():
-        wheel1.setVelocity(-6.0)
-        wheel2.setVelocity(6.0)
+        wheel1.setVelocity(-drive_speed)
+        wheel2.setVelocity(drive_speed)
 
     def turnLeft():
-        wheel1.setVelocity(6.0)
-        wheel2.setVelocity(-6.0)
+        wheel1.setVelocity(drive_speed)
+        wheel2.setVelocity(-drive_speed)
 
     def stop():
         wheel1.setVelocity(0)
@@ -734,7 +697,7 @@ class CamEvaluator:
         # zonen.ecke kleiner halb Feld (2) oder kleiner ein Feld (1,2)
         if LidarEvaluator.checkFrontWall() :             #usVorneRechts_0.getValue() < 0.2: # or True:
             if debug: print("Überprüfe Vorne")
-            bildR:list[int] = self.checkImg(img_c)
+            bildR:list[int] = self.checkImg(img_c)  #FEHLER sollte eigentlich bildC sein weil wir checken ja auch img_c und nicht bildR
         if LidarEvaluator.checkLeftWall():             #usHalbVorneLinks_6.getValue() < 0.7:
             if debug: print("Überprüfe Links")
             bildL:list[int] = self.checkImg(img_l)
@@ -964,7 +927,7 @@ class CamEvaluator:
                 return ""
         """
 
-        #rangeImage = lidar.getRangeImage(); # Step 4: Retrieve the range image
+        #rangeImage = lidar.getRangeImage(); # Step 4: Retrieve the range image  #FEHLER alle 3 laufen durch, deswegen wird abst immer als rechtester cam wert gesetzt
         if cam_c: #and round(rangeImage[1152] ,3) < 0.5: 
             img_c = CamEvaluator.getImage(cam_c)
             abst = self.abstand_c(img_c) 
@@ -1124,7 +1087,7 @@ class CamEvaluator:
         if ( 0 < b < 15) and (0 < g < 15) and (0 < r < 15):       # Schwarz (Aufpassen! - besser weiß suchen und schwarz finden)
             return "s"
         return ""
-    
+    #DUPCODE man kann abstand c l und r in eine methode verbinden
     def abstand_c(self, img_c): 
         place, dirpx, direction = 0, 0, "r"      #place == px von mitte zum Rand des Bildes (y=20 == Mitte)
         while robot.step(timestep) == 0 and place<32 and self.scanWhite(self.crop_pos(img_c, 32+place, 20)) and self.scanWhite(self.crop_pos(img_c, 32-place, 20)):
@@ -1169,7 +1132,7 @@ camE = CamEvaluator()
 delay(100)
 #areaOneMap = RoomMapping(1)
 #worldMap = WorldMapping()
-strategy = RightHandStrategy()
+strategy = LeftHandStrategy() #instanziert aber NICHT WEITER GENUTZT
 lidarEv = LidarEvaluator()
 gpsEv = GPSEvaluator()
 usEv = UsSensorEvaluator()
