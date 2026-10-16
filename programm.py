@@ -519,6 +519,8 @@ class MappingBase:
         self.smallestZ = 0
 
         self.resetted = False
+        
+        self.startingtile = self.calculateToStartingTile(self.gpsX, self.gpsZ)
     
         
             
@@ -580,28 +582,28 @@ class WorldMapping(MappingBase):
         self.gpsX = gps.getValues()[0]
         self.gpsZ = gps.getValues()[2]
         self.ninth = [1],[1]
-        self.startingtile = self.calculateToNinthStartingTile(self.gpsX, self.gpsZ)
-        self.smallestX = 0
-        self.smallestZ = 0
-        print(f'startfingtile= {self.startingtile}')
+        self.ninthstartingtile = self.calculateToNinthStartingTile(self.gpsX, self.gpsZ)
+        self.smallestNinthX = self.ninthstartingtile[0]
+        self.smallestNinthZ = self.ninthstartingtile[1]
+        print(f'startfingtile= {self.ninthstartingtile}')
         
 
         self.resetted = False
         
-    def getNinthTileCoords()->list:
-        gpsValues = gps.getValues
-        return WorldMapping.calculateToNinthTile(gpsValues[0], gpsValues[2])
+    def getNinthTileCoords(self)->list:
+        gpsValues = gps.getValues()
+        return worldMap.calculateToNinthTile(gpsValues[0], gpsValues[2])
     
     def calculateToNinthTile(self, coordinateX, coordinateZ):
-        tempX= int(round((coordinateX/12)*3,2)*100 - self.smallestX)
-        tempZ= int(round((coordinateZ/12)*3,2)*100 - self.smallestZ)
-        print(f'ohne start: {(coordinateX/12)*3*100},ergebnis: {tempX + int((tempX+1)/3)},start: {self.startingtile[0]}, tempX: {tempX}, kleinstes: {self.smallestX}, teile: {(tempX+1)/3}')
-        print(f'tempZ: {tempZ}, kleinstes: {self.smallestZ}, teile: {(tempZ+1)/3}')
+        tempX= int(round((coordinateX/12)*3,2)*100 - self.smallestNinthX)
+        tempZ= int(round((coordinateZ/12)*3,2)*100 - self.smallestNinthZ)
+        print(f'ohne start: {(coordinateX/12)*3*100},ergebnis: {tempX + int((tempX+1)/3)},start: {self.startingtile[0]}, tempX: {tempX}, kleinstes: {self.smallestNinthX}, teile: {(tempX+1)/3}')
+        print(f'tempZ: {tempZ}, kleinstes: {self.smallestNinthZ}, teile: {(tempZ+1)/3}')
         return [tempX + int((tempX+1)/3+2/3), tempZ + int((tempZ+1)/3+2/3)]
     
     def calculateToNinthStartingTile(self, coordinateX, coordinateZ):
         return [int(round((coordinateX/12)*3,2)*100),
-        int(round((coordinateZ/12)*3,2)*100)] #muss zu niedrigstes Feld geändert werden!
+        int(round((coordinateZ/12)*3,2)*100)] #-2,da er auf (2,2) und nicht auf (0,0) startet
     
     def updateGpsValues(self):
         self.gpsX = gps.getValues()[0]
@@ -615,26 +617,26 @@ class WorldMapping(MappingBase):
             difference[0][1] = int(self.ninth[0]-self.largestX)
             self.largestX = self.ninth[0]
             
-        elif self.ninth[0] < self.smallestX:
-            difference[0][0] = int(abs(self.ninth[0]-self.smallestX))
-            self.smallestX = self.ninth[0]
+        elif self.ninth[0] < self.smallestNinthX:
+            difference[0][0] = int(abs(self.ninth[0]-self.smallestNinthX))
+            self.smallestNinthX = self.ninth[0]
          
            
         if self.ninth[1] > self.largestZ:
             difference[1][1] = int(self.ninth[1]-self.largestZ)
             self.largestZ = self.ninth[1]
             
-        elif self.ninth[1] < self.smallestZ:
-            difference[1][0] = int(abs(self.ninth[1]-self.smallestZ))
-            self.smallestZ = self.ninth[1]
+        elif self.ninth[1] < self.smallestNinthZ:
+            difference[1][0] = int(abs(self.ninth[1]-self.smallestNinthZ))
+            self.smallestNinthZ = self.ninth[1]
         
 
         if sum(difference[0]) + sum(difference[1])>0:  
-            print("distanzen:" + str([self.smallestX, self.largestX, self.smallestZ, self.largestZ, difference[0], difference[1]]))
+            print("distanzen:" + str([self.smallestNinthX, self.largestX, self.smallestNinthZ, self.largestZ, difference[0], difference[1]]))
             self.padMapArray(difference)    
 
-        self.xTiles = (self.largestX+1)/3 + (self.smallestX+1)/3 +1
-        self.zTiles = (self.largestZ+1)/3 + (self.smallestX+1)/3 +1
+        self.xTiles = (self.largestX+1)/3 + (self.smallestNinthX+1)/3 +1
+        self.zTiles = (self.largestZ+1)/3 + (self.smallestNinthX+1)/3 +1
         
     
     def calculateNinthTileToTile(self, xTile:int, zTile:int):
@@ -711,22 +713,22 @@ class RoomMapping:
             difference[0][1] = int(self.tile[0]-self.largestX)
             self.largestX = self.tile[0]
             
-        elif self.tile[0] < self.smallestX:
-            difference[0][0] = int(abs(self.tile[0]-self.smallestX))
-            self.smallestX = self.tile[0]
+        elif self.tile[0] < self.smallestNinthX:
+            difference[0][0] = int(abs(self.tile[0]-self.smallestNinthX))
+            self.smallestNinthX = self.tile[0]
          
            
         if self.tile[1] > self.largestZ:
             difference[1][1] = int(self.tile[1]-self.largestZ)
             self.largestZ = self.tile[1]
             
-        elif self.tile[1] < self.smallestZ:
-            difference[1][0] = int(abs(self.tile[1]-self.smallestZ))
-            self.smallestZ = self.tile[1]
+        elif self.tile[1] < self.smallestNinthZ:
+            difference[1][0] = int(abs(self.tile[1]-self.smallestNinthZ))
+            self.smallestNinthZ = self.tile[1]
         
 
         if sum(difference[0]) + sum(difference[1])>0:  
-            print("distanzen:" + str([self.smallestX, self.largestX, self.smallestZ, self.largestZ]))
+            print("distanzen:" + str([self.smallestNinthX, self.largestX, self.smallestNinthZ, self.largestZ]))
             self.padMapArray(difference)    
        
 
@@ -1331,8 +1333,10 @@ while robot.step(timestep) != -1:
     if WorldMapping.checkWallZPositive(): print("Wand zPositiv")
     print(InertialUnitEvaluator.getDegreeRotation())
     MotionController.forward()
-    worldMap.updateGpsValues()
-    worldMap.updateArraySize()
-    worldMap.updateWallsInArray()
+    #worldMap.updateGpsValues()
+    #worldMap.updateArraySize()
+    #worldMap.updateWallsInArray()
+    print(worldMap.ninthstartingtile)
+    print(worldMap.getNinthTileCoords())
 
-    print(worldMap.mapArray)
+    #print(worldMap.mapArray)
