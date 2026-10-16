@@ -4,7 +4,7 @@ Repository for participation at the Robocup 2027 in the category Rescue Simulati
 
 ## Team
 
-Our team consists of three members: Bastian, Jonas and Luis. This project is being developed as part of our participation in the robotics club at our school in Rahden.
+Our team consists of three members: Bastian, Jasen, Jonas and Luis. This project is being developed as part of our participation in the robotics club at our school in Rahden.
 
 ## Competition
 
@@ -22,7 +22,7 @@ Sensors: LiDAR, GPS, ultrasonic sensor, cameras, inertial unit, wheel rotation s
 
 ### Mapping
 
-We create the map with a two-dimensional numpy-Array, which is required by the rules. Each element represents a quarter of a 12 cm field.
+We create the map with a two-dimensional numpy-array, which is required by the rules. Each element represents a quarter of a 12 cm field.
 Mapping is an opportunity to multiply our score, as well as collecting data useful for path finding.
 
 ### Driving
