@@ -581,10 +581,10 @@ class WorldMapping(MappingBase):
         
         self.gpsX = gps.getValues()[0]
         self.gpsZ = gps.getValues()[2]
-        self.ninth = [1],[1]
+        self.ninth = [1,1]
         self.ninthstartingtile = self.calculateToNinthStartingTile(self.gpsX, self.gpsZ)
-        self.smallestNinthX = self.ninthstartingtile[0]
-        self.smallestNinthZ = self.ninthstartingtile[1]
+        self.smallestNinthX = 0
+        self.smallestNinthZ = 0
         print(f'startfingtile= {self.ninthstartingtile}')
         
 
@@ -595,8 +595,8 @@ class WorldMapping(MappingBase):
         return worldMap.calculateToNinthTile(gpsValues[0], gpsValues[2])
     
     def calculateToNinthTile(self, coordinateX, coordinateZ):
-        tempX= int(round((coordinateX/12)*3,2)*100 - self.smallestNinthX)
-        tempZ= int(round((coordinateZ/12)*3,2)*100 - self.smallestNinthZ)
+        tempX= int(round((coordinateX/12)*3,2)*100 - self.smallestNinthX - self.ninthstartingtile[0])
+        tempZ= int(round((coordinateZ/12)*3,2)*100 - self.smallestNinthZ - self.ninthstartingtile[0])
         print(f'ohne start: {(coordinateX/12)*3*100},ergebnis: {tempX + int((tempX+1)/3)},start: {self.startingtile[0]}, tempX: {tempX}, kleinstes: {self.smallestNinthX}, teile: {(tempX+1)/3}')
         print(f'tempZ: {tempZ}, kleinstes: {self.smallestNinthZ}, teile: {(tempZ+1)/3}')
         return [tempX + int((tempX+1)/3+2/3), tempZ + int((tempZ+1)/3+2/3)]
@@ -1338,5 +1338,5 @@ while robot.step(timestep) != -1:
     #worldMap.updateWallsInArray()
     print(worldMap.ninthstartingtile)
     print(worldMap.getNinthTileCoords())
-
-    #print(worldMap.mapArray)
+    worldMap.updateArraySize()
+    print(worldMap.mapArray)
