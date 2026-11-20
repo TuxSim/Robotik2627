@@ -551,11 +551,6 @@ class MappingBase:
         print(f'MapArray: {self.mapArray}')
         
         
-    def padMapArray(self, width):
-        print(f'width= {width}')
-        self.mapArray = np.pad(self.mapArray, pad_width = ((abs(width[1][1]), width[1][1]), (abs(width[0][1]), width[0][1])), mode='constant', constant_values=0)
-        print(f'mapArray{self.mapArray}')
-       
     
     
         
@@ -585,6 +580,8 @@ class WorldMapping(MappingBase):
         self.ninthstartingtile = self.calculateToNinthStartingTile(self.gpsX, self.gpsZ)
         self.smallestNinthX = 0
         self.smallestNinthZ = 0
+        self.largestNinthX = 0
+        self.largestNinthZ = 0
         print(f'startfingtile= {self.ninthstartingtile}')
         
 
@@ -613,27 +610,30 @@ class WorldMapping(MappingBase):
         
     def updateArraySize(self):
         difference:list = [[0, 0],[0, 0]]
-        if self.ninth[0] > self.largestX:
+        print("updateArraySize")
+        if self.ninth[0] > self.largestNinthX:
             difference[0][1] = int(self.ninth[0]-self.largestX)
             self.largestX = self.ninth[0]
             
         elif self.ninth[0] < self.smallestNinthX:
             difference[0][0] = int(abs(self.ninth[0]-self.smallestNinthX))
-            self.smallestNinthX = self.ninth[0]
+            self.smallestNinthX = (self.ninth[0])
          
            
-        if self.ninth[1] > self.largestZ:
+        if self.ninth[1] > self.largestNinthZ:
             difference[1][1] = int(self.ninth[1]-self.largestZ)
             self.largestZ = self.ninth[1]
             
         elif self.ninth[1] < self.smallestNinthZ:
             difference[1][0] = int(abs(self.ninth[1]-self.smallestNinthZ))
-            self.smallestNinthZ = self.ninth[1]
+            self.smallestNinthZ = abs(self.ninth[1])
         
-
+        print("distanzen:" + str([self.smallestNinthX, self.largestX, self.smallestNinthZ, self.largestZ, difference[0], difference[1]]))
+                    
         if sum(difference[0]) + sum(difference[1])>0:  
-            print("distanzen:" + str([self.smallestNinthX, self.largestX, self.smallestNinthZ, self.largestZ, difference[0], difference[1]]))
-            self.padMapArray(difference)    
+            self.mapArray = np.pad(self.mapArray, pad_width = ((abs(difference[1][0]), difference[1][1]), (abs(difference[0][0]), difference[0][1])), mode='constant', constant_values=0)
+            print(f'mapArray{self.mapArray}')
+                    
 
         self.xTiles = (self.largestX+1)/3 + (self.smallestNinthX+1)/3 +1
         self.zTiles = (self.largestZ+1)/3 + (self.smallestNinthX+1)/3 +1
@@ -1338,5 +1338,6 @@ while robot.step(timestep) != -1:
     #worldMap.updateWallsInArray()
     print(worldMap.ninthstartingtile)
     print(worldMap.getNinthTileCoords())
+    worldMap.updateGpsValues()
     worldMap.updateArraySize()
     print(worldMap.mapArray)
